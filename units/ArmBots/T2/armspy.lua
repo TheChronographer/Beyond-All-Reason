@@ -29,7 +29,7 @@ return {
 		maxwaterdepth = 112,
 		metalcost = 135,
 		mincloakdistance = 75,
-		movementclass = "BOT2",
+		movementclass = "BOT3",
 		movestate = 0,
 		objectname = "Units/ARMSPY.s3o",
 		onoffable = false,

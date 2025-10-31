@@ -20,7 +20,7 @@ return {
 		maxdec = 0.01427,
 		metalcost = 3400,
 		minwaterdepth = 15,
-		movementclass = "BOAT9",
+		movementclass = "BOAT8",
 		movestate = 0,
 		nochasecategory = "VTOL",
 		objectname = "Units/CORBATS.s3o",

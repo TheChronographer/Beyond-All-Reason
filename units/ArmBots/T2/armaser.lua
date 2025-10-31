@@ -22,7 +22,7 @@ return {
 		maxslope = 32,
 		maxwaterdepth = 112,
 		metalcost = 78,
-		movementclass = "BOT2",
+		movementclass = "BOT3",
 		movestate = 0,
 		nochasecategory = "MOBILE",
 		objectname = "Units/ARMASER.s3o",

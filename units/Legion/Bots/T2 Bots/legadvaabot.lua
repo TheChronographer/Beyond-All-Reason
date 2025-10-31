@@ -18,7 +18,7 @@ return {
 		maxacc = 0.138,
 		maxdec = 0.6486,
 		metalcost = 750,
-		movementclass = "ABOT3",
+		movementclass = "ABOT2",
 		movestate = 0,
 		nochasecategory = "NOTAIR",
 		objectname = "Units/legadvaabot.s3o",

@@ -22,7 +22,7 @@ return {
 		maxwaterdepth = 22,
 		metalcost = 680,
 		mincloakdistance = 80,
-		movementclass = "BOT2",
+		movementclass = "BOT3",
 		nochasecategory = "VTOL",
 		objectname = "Units/ARMSNIPE.s3o",
 		script = "Units/ARMSNIPE.cob",

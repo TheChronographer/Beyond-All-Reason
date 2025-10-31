@@ -19,7 +19,7 @@ return {
 		maxslope = 17,
 		maxwaterdepth = 12,
 		metalcost = 270,
-		movementclass = "BOT3",
+		movementclass = "BOT4",
 		nochasecategory = "VTOL",
 		objectname = "Units/ARMWAR.s3o",
 		script = "Units/ARMWAR.cob",

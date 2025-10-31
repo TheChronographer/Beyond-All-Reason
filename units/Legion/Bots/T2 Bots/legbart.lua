@@ -20,7 +20,7 @@ return {
 		maxslope = 14,
 		speed = 60.0,
 		maxwaterdepth = 12,
-		movementclass = "BOT3",
+		movementclass = "BOT4",
 		nochasecategory = "VTOL",
 		objectname = "Units/LEGBART.s3o",
 		script = "Units/LEGBART.cob",

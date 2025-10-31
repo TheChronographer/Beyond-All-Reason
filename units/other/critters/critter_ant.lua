@@ -29,7 +29,7 @@ return {
 		maxslope = 90,
 		speed = 18.0,
 		maxwaterdepth = 2,
-		movementclass = "SBOT2",
+		movementclass = "BOT1",
 		movestate = -1,
 		noautofire = false,
 		nochasecategory = "MOBILE ",
