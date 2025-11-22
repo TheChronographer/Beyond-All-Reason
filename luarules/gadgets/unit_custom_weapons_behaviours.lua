@@ -265,53 +265,44 @@ end
 -- Based on retarget
 -- Uses no weapon customParams.
 
-resultCaches.guidance = {} -- ownerID = <isFiring, guidanceType, guidanceTarget>
+resultCaches.guidance = {} -- ownerID = <isFiring, guidanceType, userTarget, guidanceTarget>
 
 specialEffectFunction.guidance = function(projectileID)
 	if spGetProjectileTimeToLive(projectileID) > 0 then
 		local ownerID = spGetProjectileOwnerID(projectileID)
 
-		if not ownerID then
+		if spGetUnitIsDead(ownerID) ~= false then
 			return true
 		end
 
+		local targetType, missileTarget = spGetProjectileTarget(projectileID)
 		local results = resultCaches.guidance[ownerID]
 
 		if not results then
-			results = {}
-			results.guidance[ownerID] = results
-			if spGetUnitWeaponState(ownerID, 1, "nextSalvo") + 1 < gameFrame then
-				results[1] = false
-				return false -- The targeting laser provides guidance only when firing.
-			else
-				results[1] = true
-			end
-		elseif not results[1] then
-			return false
+			-- Guidance weapon must be the primary and have burst/reload > 1 frame.
+			-- This is hackish but works well to prevent spammy retargeting anyway.
+			results = {
+				(spGetUnitWeaponState(ownerID, 1, "nextSalvo") or 0) + 1 >= gameFrame,
+				spGetUnitWeaponTarget(ownerID, 1)
+			}
+			resultCaches.guidance[ownerID] = results
 		end
 
-		local guidanceType, guidanceTarget
-
-		if results[2] == nil then
-			local _; -- declare a local sink var for unused values
-			guidanceType, _, guidanceTarget = spGetUnitWeaponTarget(ownerID, 1)
-			results[2] = guidanceType or false
-			results[3] = guidanceTarget or false
-		else
-			guidanceType, guidanceTarget = results[2], results[3]
-		end
-
-		local targetType, missileTarget = spGetProjectileTarget(projectileID)
-
-		if guidanceTarget then
+		if results[1] and results[2] then
+			local guidanceType, guidanceTarget = results[2], results[4]
 			if not equalTargets(guidanceTarget, missileTarget) then
 				if guidanceType == 1 then
 					spSetProjectileTarget(projectileID, guidanceTarget, targetedUnit)
+					return false
 				elseif guidanceType == 2 then
 					spSetProjectileTarget(projectileID, guidanceTarget[1], guidanceTarget[2], guidanceTarget[3])
+					return false
 				end
 			end
-		elseif targetType == targetedUnit then
+		end
+
+		-- Guidance weapon is not firing, its target is invalid or lost, and so on.
+		if targetType == targetedUnit then
 			spSetProjectileTarget(projectileID, spGetUnitPosition(missileTarget))
 		end
 
