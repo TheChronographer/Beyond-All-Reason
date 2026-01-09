@@ -35,7 +35,7 @@ return {
 		turninplaceanglelimit = 90,
 		turnrate = 385.5,
 		waterline = 80,
-		workertime = 300,
+		workertime = 345,
 		buildoptions = {
 			"leganavalfusion",
 			"leganavaleconv",
@@ -55,7 +55,7 @@ return {
 		customparams = {
 			model_author = "ZephyrSkies",
 			normaltex = "unittextures/leg_normal.dds",
-			subfolder = "Legion/Ships/T2",
+			subfolder = "Legion/Constructors",
 			techlevel = 2,
 			unitgroup = "buildert2",
 		},

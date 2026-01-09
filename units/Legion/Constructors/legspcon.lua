@@ -67,6 +67,7 @@ return {
 			"legjuno",
 			"legfhp",
 			"legsy",
+			"legaap",
 			"legamphlab",
 			"legsplab",
 			"legtide",
@@ -84,7 +85,7 @@ return {
 		customparams = {
 			model_author = "ZephyrSkies",
 			normaltex = "unittextures/leg_normal.dds",
-			subfolder = "Legion/SeaPlanes",
+			subfolder = "Legion/Constructors",
 			unitgroup = "builder",
 		},
 		sfxtypes = {
