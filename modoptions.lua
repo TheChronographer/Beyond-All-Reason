@@ -78,6 +78,15 @@ local options = {
     },
 
     {
+        key    	= "allowunitcontrolwidgets",
+        name   	= "Allow Custom 'Unit Control' Widgets",
+        desc   	= "Allow custom user 'unit control' widgets or disallow them",
+        type   	= "bool",
+        def    	= true,
+        section	= "options_main",
+    },
+
+    {
         key    	= "allowpausegameplay",
         name   	= "Allow Commands While Paused",
         desc   	= "Allow giving unit commands while paused",
@@ -1371,7 +1380,7 @@ local options = {
         def    	= 1,
         min    	= 0.5,
         max    	= 5,
-        step   	= 1,
+        step   	= 0.1,
     },
 
     {
@@ -1508,19 +1517,6 @@ local options = {
     },
 
     {
-        key     = "proposed_unit_reworks_feedback_link",
-        name    = "Feedback Thread",
-        desc    = "Discord discussion about Season 3 balance test.",
-        section = "options_experimental",
-        type    = "link",
-        link    = "https://discord.com/channels/549281623154229250/1447323521662455910",
-        width   = 215,
-        column  = 2,
-        linkheight = 325,
-        linkwidth = 350,
-    },
-
-    {
         key     = "community_balance_patch",
         name    = "Community Balance Patch Jan '26",
         desc    = "Enable community balance patch changes\n(overwrites changes in official seasonal balance test)",
@@ -1633,6 +1629,28 @@ local options = {
     },
 
     {
+        key 	= "easytax",
+        name 	= "Easy Sharing Tax",
+        desc 	= "Anti co-op sharing tax mod. Overwrites other tax settings. Don't combine with other sharing restriction mods, everything you need is included with easy tax.",
+        type 	= "bool",
+        section = "options_experimental",
+        def 	= false,
+    },
+
+    {
+        key     = "easytax_link",
+        name    = "Changelog",
+        desc    = "Easy Sharing Tax description.",
+        section = "options_experimental",
+        type    = "link",
+        link    = "https://gist.github.com/RebelNode/43b986f29b9cfacbe95cf634cac25c49",
+        width   = 215,
+        column  = 1.65,
+        linkheight = 325,
+        linkwidth = 350,
+    },
+
+    {
         key		= "tech_blocking",
         name   	= "Tech Blocking",
         desc   	= "Enable tech level blocking system that prevents building units until sufficient tech points are accumulated",
@@ -1720,29 +1738,6 @@ local options = {
         hidden  = true,
         section = "options_experimental",
         def     = false,
-    },
-
-    {
-        key    	= "shieldsrework",
-        name   	= "Shields Rework v2.0",
-        desc   	= "Shields block plasma. Overkill damage is absorbed. Shield is down for the duration required to recharge the overkill damage at normal energy cost.",
-        type   	= "bool",
-        hidden 	= false,
-        section = "options_experimental",
-        def  	= false,
-    },
-
-    {
-        key     = "shieldsrework_community_poll_link",
-        name    = "Community Poll",
-        desc    = "A referendum to gauge community sentiment about whether or not it should be integrated into the regular game.",
-        section = "options_experimental",
-        type    = "link",
-        link    = "https://discord.com/channels/549281623154229250/1429782218997497946",
-        width   = 200,
-        column  = 1.65,
-        linkheight = 375,
-        linkwidth = 350,
     },
 
     {
@@ -2415,9 +2410,9 @@ Example: Armada VS Cortex VS Legion: 273 or 100 010 001 or 256 + 16 + 1]],
         hidden  = true,
         items	= {
             { key = "unchanged", 		name = "Unchanged", 			desc = "Unchanged" },
-            { key = "absorbplasma", 	name = "Absorb Plasma", 		desc = "Collisions Disabled" },
-            { key = "absorbeverything", name = "Absorb Everything", 	desc = "Collisions Enabled" },
-            { key = "bounceeverything", name = "Deflect Everything", 	desc = "Collisions Enabled" },
+            { key = "absorbeverything", name = "Absorb Everything", 	desc = "Shields absorb everything" },
+            { key = "bounceplasma",     name = "Deflect Plasma", 		desc = "Shields deflect plasma only" },
+            { key = "bounceeverything", name = "Deflect Everything", 	desc = "Shields deflect everything" },
         }
     },
 
