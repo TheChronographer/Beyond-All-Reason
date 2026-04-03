@@ -27,8 +27,6 @@ return {
 		footprintz = 2,
 		hidedamage = true,
     	holdsteady = true,
-		idleautoheal = 5,
-		idletime = 1800,
 		sightemitheight = 40,
 		mass = 4999,
 		health = 4450,
@@ -141,10 +139,6 @@ return {
 				[1] = "custom:com_sea_laser_bubbles",
 				[2] = "custom:barrelshot-medium",
 				[3] = "custom:footstep-medium",
-			},
-			pieceexplosiongenerators = {
-				[1] = "deathceg3",
-				[2] = "deathceg4",
 			},
 		},
 		sounds = {

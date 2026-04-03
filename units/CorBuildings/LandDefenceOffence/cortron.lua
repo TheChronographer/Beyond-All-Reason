@@ -12,8 +12,6 @@ return {
 		footprintx = 4,
 		footprintz = 4,
 		health = 3550,
-		idleautoheal = 5,
-		idletime = 1800,
 		maxacc = 0,
 		maxdec = 0,
 		maxslope = 10,
@@ -36,6 +34,7 @@ return {
 			subfolder = "CorBuildings/LandDefenceOffence",
 			techlevel = 2,
 			unitgroup = "weapon",
+			restrictions_inclusion = "_notacnukes_",
 			usebuildinggrounddecal = true,
 		},
 		featuredefs = {
@@ -67,13 +66,6 @@ return {
 				object = "Units/cor3X3A.s3o",
 				reclaimable = true,
 				resurrectable = 0,
-			},
-		},
-		sfxtypes = {
-			pieceexplosiongenerators = {
-				[1] = "deathceg2",
-				[2] = "deathceg3",
-				[3] = "deathceg4",
 			},
 		},
 		sounds = {
@@ -146,6 +138,7 @@ return {
 					shield_aoe_penetration = true,
 					water_splash_ceg = "splash-gigantic", -- 1 bigger than it would get
 					stockpilelimit = 10,
+					nuclear = 1,
 				},
 				damage = {
 					commanders = 750,

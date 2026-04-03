@@ -31,8 +31,6 @@ return {
 		hidedamage = true,
     	holdsteady = true,
 		icontype = "corcom",
-		idleautoheal = 5,
-		idletime = 1800,
 		sightemitheight = 40,
 		mass = 4900,
 		health = 6000,
@@ -163,10 +161,6 @@ return {
 				[1] = "custom:com_sea_laser_bubbles",
 				[2] = "custom:barrelshot-medium",
 				[3] = "custom:footstep-medium",
-			},
-			pieceexplosiongenerators = {
-				[1] = "deathceg3",
-				[2] = "deathceg4",
 			},
 		},
 		sounds = {
