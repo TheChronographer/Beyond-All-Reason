@@ -70,7 +70,8 @@ local numTeamsInAllyTeam = #myAllyTeamList
 -- Game mode / state
 local numPlayers = Spring.Utilities.GetPlayerCount()
 local isSinglePlayer = Spring.Utilities.Gametype.IsSinglePlayer()
-local isScenario = Spring.GetModOptions().scenariooptions ~= nil
+local _modOpts = Spring.GetModOptions()
+local isScenario = _modOpts ~= nil and _modOpts.scenariooptions ~= nil
 local chobbyLoaded = false
 local isSingle = false
 local gameStarted = (sp.GetGameFrame() > 0)
@@ -86,6 +87,7 @@ local allyteamOverflowingEnergy = false
 local overflowingMetal = false
 local overflowingEnergy = false
 local showOverflowTooltip = {}
+local showingWarning = { metal = false, energy = false }
 local supressOverflowNotifs = false
 local isMetalmap = false
 
@@ -363,6 +365,7 @@ local function updateButtons()
 	if WG['teamstats'] and not isScenario then addButton('stats', Spring.I18N('ui.topbar.button.stats')) end
 	if gameIsOver then addButton('graphs', Spring.I18N('ui.topbar.button.graphs')) end
 	if WG['scavengerinfo'] then addButton('scavengers', Spring.I18N('ui.topbar.button.scavengers')) end
+	if isScenario and WG['missioninfo'] then addButton('mission', Spring.I18N('ui.topbar.button.mission')) end
 	if isSinglePlayer and cfg.allowSavegame and WG['savegame'] then addButton('save', Spring.I18N('ui.topbar.button.save')) end
 
 	buttonsArea['buttons'][lastbutton][1] = buttonsArea['buttons'][lastbutton][1] - sidePadding
@@ -390,17 +393,7 @@ end
 local function updateComs(forceText)
 	local area = comsArea
 
-	-- Check if commander texture is loaded before creating display list
 	local texPath = string.lower(string.gsub(textures.com, ":.:", ""))
-	if VFS.FileExists(texPath) then
-		local texInfo = gl.TextureInfo(textures.com)
-		-- If texture isn't loaded yet, mark that coms need updating and retry next frame
-		if not texInfo or not texInfo.xsize or texInfo.xsize <= 0 then
-			comcountChanged = true
-			return
-		end
-	end
-
 
 	if dlist.coms then glDeleteList(dlist.coms) end
 	comsDlistUpdate = true
@@ -535,6 +528,7 @@ local function drawResbarPullIncome(res)
 end
 
 local function drawResbarStorage(res)
+	if showingWarning[res] then return end
 	font2:Begin(true)
 	font2:SetOutlineColor(0,0,0,1)
 	if res == 'metal' then
@@ -622,6 +616,7 @@ local function updateResbarText(res, force)
 
 				end
 
+				if not showingWarning[res] then showingWarning[res] = true; updateRes[res][3] = true end
 				if cache.lastWarning[res] ~= text or force then
 					cache.lastWarning[res] = text
 
@@ -660,7 +655,7 @@ local function updateResbarText(res, force)
 						end
 
 						local bannerH = 15.5 * widgetScale
-						local bannerRightX = resbarArea[res][3] - (res == 'energy' and cfg.useSkew and bannerH * skewTan * 0.5 or 0)
+						local bannerRightX = resbarArea[res][3] - bgpadding - (res == 'energy' and cfg.useSkew and bannerH * skewTan * 0.5 or 0)
 
 						RectRound(bannerRightX - textWidth, resbarArea[res][4] - bannerH, bannerRightX, resbarArea[res][4], 3.7 * widgetScale, 0, 0, 1, 1, color1, color2)
 						RectRound(bannerRightX - textWidth + bgpadding2, resbarArea[res][4] - bannerH + bgpadding2, bannerRightX - bgpadding2, resbarArea[res][4], 2.8 * widgetScale, 0, 0, 1, 1, color3, color4)
@@ -675,10 +670,15 @@ local function updateResbarText(res, force)
 				end
 			end
 		else
-			if force then
-				if dlist.resbar[res][7] then glDeleteList(dlist.resbar[res][7]) end
-				cache.lastWarning[res] = nil
-			end
+			-- Always clean up the banner dlist and lastWarning so the next overflow
+			-- always recreates the banner in sync with showingWarning being set.
+			-- Without this, the old banner dlist persists, drawResBars shows it
+			-- immediately when overflow restarts while showingWarning stays false
+			-- for another 1.1s, leaving storage text visible under the banner.
+			if dlist.resbar[res][7] then glDeleteList(dlist.resbar[res][7]) end
+			dlist.resbar[res][7] = nil
+			cache.lastWarning[res] = nil
+			if showingWarning[res] then showingWarning[res] = false; updateRes[res][3] = true end
 
 			showOverflowTooltip[res] = nil
 		end
@@ -1211,9 +1211,6 @@ function widget:Update(dt)
 		hoveringTopbar = false
 		if mx > topbarArea[1] and my > topbarArea[2] then -- checking if the curser is high enough, too
 			hoveringTopbar = hoveringElement(mx, my)
-			if hoveringTopbar then
-				sp.SetMouseCursor('cursornormal')
-			end
 		end
 
 		local _, _, isPaused = sp.GetGameSpeed()
@@ -1345,6 +1342,7 @@ function widget:Update(dt)
 end
 
 -- --- OPTIMIZATION: Pre-defined function for RenderToTexture to avoid creating a closure.
+local function clearFn() end  -- no-op used for pre-clearing regions in uiTex
 local function renderResbarText()
 	glTranslate(-1, -1, 0)
 	glScale(2 / (topbarArea[3]-topbarArea[1]), 2 / (topbarArea[4]-topbarArea[2]),	0)
@@ -1357,7 +1355,7 @@ local function renderResbarText()
 		drawResbarPullIncome(res)
 	end
 	if updateRes[res][3] then
-		updateRes[res][3] = false
+		if not showingWarning[res] then updateRes[res][3] = false end
 		drawResbarStorage(res)
 	end
 
@@ -1368,7 +1366,7 @@ local function renderResbarText()
 		drawResbarPullIncome(res)
 	end
 	if updateRes[res][3] then
-		updateRes[res][3] = false
+		if not showingWarning[res] then updateRes[res][3] = false end
 		drawResbarStorage(res)
 	end
 end
@@ -1751,8 +1749,10 @@ local function renderWindText()
     local skewCenterOffset = cfg.useSkew and windH * skewTan * 0.5 or 0
     font2:Begin(true)
     font2:SetOutlineColor(0,0,0,1)
-    -- current wind (large, centered)
-    font2:Print("\255\255\255\255" .. currentWind, windArea[1] + ((windArea[3] - windArea[1]) / 2.1) - skewCenterOffset, windArea[2] + (windH / 1.85) - (fontSize / 5), fontSize, 'oc')
+    -- current wind (large, centered) - only once game has started
+    if gameFrame > 0 then
+        font2:Print("\255\255\255\255" .. currentWind, windArea[1] + ((windArea[3] - windArea[1]) / 2.1) - skewCenterOffset, windArea[2] + (windH / 1.85) - (fontSize / 5), fontSize, 'oc')
+    end
     -- min wind: top area, x corrected for slope at text height
     local smallFS = windH / 3.4
     local minBaseline = windArea[4] - smallFS + (1 * widgetScale)
@@ -1779,6 +1779,10 @@ end
 
 function widget:DrawScreen()
 	now = osClock()
+
+	if hoveringTopbar then
+		sp.SetMouseCursor('cursornormal')
+	end
 
 	if showButtons ~= cache.prevShowButtons then
 		cache.prevShowButtons = showButtons
@@ -1842,12 +1846,32 @@ function widget:DrawScreen()
 		glCallList(dlist.tidal2)
 	end
 
+	-- Pre-clear storage text from uiTex before rendering it to screen.
+	-- drawResBars() updates uiTex AFTER BlendTexRect each frame, so without this
+	-- the stale storage text is visible for up to ~50ms when the warning first activates.
+	if uiTex and (showingWarning.metal or showingWarning.energy) then
+		local storageScissors = {}
+		for _, res in ipairs({'metal', 'energy'}) do
+			if showingWarning[res] and resbarDrawinfo[res] and resbarDrawinfo[res].textStorage then
+				storageScissors[#storageScissors+1] = {
+					(resbarDrawinfo[res].textStorage[2]-topbarArea[1])-(resbarDrawinfo[res].textStorage[4]*4),
+					(topbarArea[4]-topbarArea[2])*0.48,
+					resbarDrawinfo[res].textStorage[4]*4.1,
+					topbarArea[4]-topbarArea[2]
+				}
+			end
+		end
+		if storageScissors[1] then
+			r2tHelper.RenderToTexture(uiTex, clearFn, true, storageScissors)
+		end
+	end
+
 	if uiTex then
 		r2tHelper.BlendTexRect(uiTex, topbarArea[1], topbarArea[2], topbarArea[3], topbarArea[4], true)
 	end
 
 	-- current wind
-	if gameFrame > 0 and not windFunctions.isNoWind() then
+	if not windFunctions.isNoWind() then
 		if currentWind ~= prevWind or refreshUi then
 			prevWind = currentWind
 
@@ -1892,8 +1916,10 @@ function widget:DrawScreen()
 		-- changelog changes highlight
 		if WG['changelog'] and WG['changelog'].haschanges() then
 			local button = 'changelog'
-			local paddingsize = 1
-			RectRound(buttonsArea['buttons'][button][1]+paddingsize, buttonsArea['buttons'][button][2]+paddingsize, buttonsArea['buttons'][button][3]-paddingsize, buttonsArea['buttons'][button][4]-paddingsize, 3.5 * widgetScale, 0, 0, 0, button == firstButton and 1 or 0, { 1,1,1, 0.1*blinkProgress })
+			if buttonsArea['buttons'][button] then
+				local paddingsize = 1
+				RectRound(buttonsArea['buttons'][button][1]+paddingsize, buttonsArea['buttons'][button][2]+paddingsize, buttonsArea['buttons'][button][3]-paddingsize, buttonsArea['buttons'][button][4]-paddingsize, 3.5 * widgetScale, 0, 0, 0, button == firstButton and 1 or 0, { 1,1,1, 0.1*blinkProgress })
+			end
 		end
 
 		-- hovered?
@@ -1966,6 +1992,7 @@ local function hideWindows()
 	local closedWindow = false
 	closedWindow = closeWindow('options') or closedWindow
 	closedWindow = closeWindow('scavengerinfo') or closedWindow
+	closedWindow = closeWindow('missioninfo') or closedWindow
 	closedWindow = closeWindow('keybinds') or closedWindow
 	closedWindow = closeWindow('changelog') or closedWindow
 	closedWindow = closeWindow('gameinfo') or closedWindow
@@ -2032,6 +2059,8 @@ local function applyButtonAction(button)
 		end
 	elseif button == 'scavengers' then
 		toggleWindow('scavengerinfo')
+	elseif button == 'mission' then
+		toggleWindow('missioninfo')
 	elseif button == 'keybinds' then
 		toggleWindow('keybinds')
 	elseif button == 'changelog' then

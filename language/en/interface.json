@@ -1,6 +1,10 @@
 {
 	"ui": {
 		"forceResignMessage": "You have been force-resigned: Self-destructing all your units is considered unwanted behavior when you still have teammates playing.",
+		"factoryqmanager": {
+			"saved": "Saved",
+			"loaded": "Loaded"
+		},
 		"rejoin": {
 			"catchingUp": "Catching up to "
 		},
@@ -17,6 +21,7 @@
 				"changes": "Changes",
 				"keys": "Keys",
 				"scavengers": "Scavengers",
+				"mission": "Mission",
 				"stats": "Statistics",
 				"graphs": "Graphs",
 				"save": "Save"
@@ -323,6 +328,15 @@
 		},
 		"changelog": {
 			"title": "Changelog"
+		},
+		"missioninfo": {
+			"title": "Mission Info",
+			"difficulty": "Difficulty",
+			"objectives": "Objectives",
+			"victory": "Victory condition",
+			"defeat": "Defeat condition",
+			"summary": "Summary",
+			"briefing": "Briefing"
 		},
 		"keybinds": {
 			"title": "Keybinds",
@@ -1766,8 +1780,6 @@
 				"factoryholdpos_descr": "Sets factories and units they produce, to hold position automatically (not aircraft)",
 				"factoryrepeat": "auto-repeat",
 				"factoryrepeat_descr": "Sets new factories on Repeat mode",
-				"transportai": "Transport AI",
-				"transportai_descr": "Transport units automatically pick up new units going to factory waypoint.",
 				"settargetdefault": "Set-target as default",
 				"settargetdefault_descr": "Replace default attack command to a set-target command\n(when rightclicked on enemy unit)",
 				"dgunnogroundenemies": "Dont snap DGun to ground units",
@@ -1798,6 +1810,8 @@
 				"autocheat_descr": "does: /cheat, /globallos, /godmode",
 				"restart": "Restart",
 				"restart_descr": "Restarts the game",
+				"restart_with_state": "Restart (keep units & orders)",
+				"restart_with_state_descr": "Saves every current unit (with its health, states and command queue), restarts the game, then restores them. Best used in singleplayer.",
 				"echocamerastate": "Echo cameraState",
 				"echocamerastate_descr": "Echoes contents of Spring.GetCameraState()",
 				"storedefaultsettings": "Store default settings",
