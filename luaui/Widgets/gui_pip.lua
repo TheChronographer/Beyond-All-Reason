@@ -486,6 +486,7 @@ local miscState = {
 	minimapWidgetDisabled = false,  -- Whether we've disabled the old minimap widget (for minimap mode)
 	minimapCameraRestored = false,  -- Whether minimap camera state was restored from config (for luaui reload)
 	minimapRestoreAtMinZoom = false,  -- Whether the restored minimap camera was at minimum zoom (snap to recalculated min)
+	minimapInitialRotationSyncPending = false,  -- One-shot rotation/layout resync after startup or reload
 	minimapMinimized = false,  -- Whether the minimap is hidden via MinimapMinimize config (minimap mode only)
 	minimapMinimizeAnimating = false,  -- Whether a minimap minimize animation is in progress
 	engineMinimapActive = false,  -- Whether engine minimap fallback is currently rendering (tracks transitions)
@@ -4359,7 +4360,10 @@ local function UpdatePlayerTracking()
 				local rx = playerCamState.rx or 0  -- Camera rotation around X axis (tilt) - in radians
 				local ry = playerCamState.ry or 0  -- Camera rotation around Y axis (heading) - in radians
 				local dist = playerCamState.dist  -- Camera distance (may be nil)
-				local height = playerCamState.height or camY or 500
+				-- Only fall back to camY when no explicit height; never default to a hardcoded
+				-- value (a small default like 500 produces a spurious zoomed-in zoomValue when
+				-- the player is actually zoomed out).
+				local height = playerCamState.height or camY
 
 				-- Calculate ground point that camera is looking at
 				-- For spring/overhead camera: the px,pz is roughly the point being looked at
@@ -4405,18 +4409,20 @@ local function UpdatePlayerTracking()
 				-- pipSizeRatio < 1 means PIP is smaller than screen
 				local pipSizeRatio = pipDiagonal / screenDiagonal
 
-				-- First priority: use dist if available (spring/ta camera)
-				-- Validate dist is reasonable (100-20000 range for overview support)
-				if dist and dist > 100 and dist < 16000 then
+				-- First priority: use dist if available (spring/ta camera).
+				-- Always prefer dist when present, even when very large (player zoomed way out
+				-- in overview): clamp it instead of falling through to the height branch,
+				-- because `height` for other camera modes means camera-Y-above-terrain (small)
+				-- and would produce a spurious zoomed-IN value mid-transition.
+				if dist and dist > 0 then
+					local clampedDist = math.max(100, math.min(20000, dist))
 					-- Spring camera distance scales inversely with zoom
-					-- Typical range: 500-3000 for normal play, up to 15000+ for overview
-					-- Base zoom from player's camera distance
 					-- Higher constant = more zoomed in result
-					local baseZoom = 2000 / dist
+					local baseZoom = 2000 / clampedDist
 					-- Adjust zoom based on PIP size: smaller PIP = lower zoom to show same world area
 					-- If PIP is half screen size, zoom should be halved to fit same view in smaller space
 					zoomValue = baseZoom * pipSizeRatio
-					-- Clamp to valid zoom range instead of discarding
+					-- Clamp to valid zoom range
 					zoomValue = math.max(GetEffectiveZoomMin(), math.min(GetEffectiveZoomMax(), zoomValue))
 				end
 
@@ -7616,6 +7622,7 @@ if isMinimapMode then
 	uiState.inMinMode = false
 	-- Honour MinimapMinimize: start hidden if user had the minimap minimized
 	miscState.minimapMinimized = (miscState.oldMinimapMinimized == 1)
+	miscState.minimapInitialRotationSyncPending = true
 	-- Only reset camera if not restored from config (luaui reload)
 	if not miscState.minimapCameraRestored then
 		cameraState.wcx = mapInfo.mapSizeX / 2
@@ -7880,6 +7887,10 @@ function widget:ViewResize()
 		-- This ensures the first frame renders with correct bounds
 		RecalculateWorldCoordinates()
 		RecalculateGroundTextureCoordinates()
+
+		Spring.SendCommands(string.format("minimap geometry %d %d %d %d",
+			math.floor(render.dim.l), math.floor(render.vsy - render.dim.t),
+			math.floor(render.dim.r - render.dim.l), math.floor(render.dim.t - render.dim.b)))
 	else
 		-- Normal PIP mode: scale dimensions with screen size
 		-- When in minMode, render.dim is the tiny button — use savedDimensions as the real dimensions
@@ -15493,6 +15504,7 @@ function widget:DrawScreen()
 	-- or engine commands resetting the minimize/slave state between frames.
 	if isMinimapMode and not miscState.engineMinimapActive then
 		Spring.SendCommands("minimap minimize 1")
+		gl.SlaveMiniMap(true)
 	end
 
 	-- In minimap mode, honour MinimapMinimize to hide the PIP minimap
@@ -16482,6 +16494,18 @@ function widget:Update(dt)
 		end
 	end
 
+	if isMinimapMode and miscState.minimapInitialRotationSyncPending and gameHasStarted then
+		miscState.minimapInitialRotationSyncPending = false
+		local currentRotation = Spring.GetMiniMapRotation and Spring.GetMiniMapRotation() or 0
+		render.minimapRotation = currentRotation
+		render.lastMinimapRotation = currentRotation
+		widget:ViewResize()
+		pipR2T.contentNeedsUpdate = true
+		pipR2T.unitsNeedsUpdate = true
+		pipR2T.frameNeedsUpdate = true
+		pipR2T.forceRefreshFrames = 5
+	end
+
 	-- Skip ALL heavy processing when minimized and not animating.
 	-- DrawScreen/DrawWorld already return early when minimized, so ghost cleanup,
 	-- TV camera, zoom interpolation, hover detection, etc. are pure waste.
@@ -16736,6 +16760,7 @@ function widget:Update(dt)
 		end
 		-- Also ensure the engine minimap stays minimized
 		Spring.SendCommands("minimap minimize 1")
+		gl.SlaveMiniMap(true)
 		-- Re-register WG['minimap'] API: the standard Minimap widget's Initialize
 		-- may have overwritten our registration (it has a higher layer number so
 		-- it initializes after us during luaui reload)
@@ -17250,7 +17275,7 @@ function widget:Update(dt)
 		local gameOverSlow = miscState.gameOverZoomingOut and 1.2 or nil
 
 		if zoomNeedsUpdate then
-			local zoomSmooth = gameOverSlow or config.zoomSmoothness
+			local zoomSmooth = gameOverSlow or (interactionState.trackingPlayerID and config.playerTrackingSmoothness or config.zoomSmoothness)
 			cameraState.zoom = cameraState.zoom + (cameraState.targetZoom - cameraState.zoom) * math.min(dt * zoomSmooth, 1)
 			-- Snap to target when close enough to avoid the asymptotic interpolation
 			-- never reaching exact fitZoom (which would leave a sliver of void)
