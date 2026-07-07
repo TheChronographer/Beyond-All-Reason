@@ -2294,6 +2294,7 @@ function init()
 			lighteffects = false,
 			lighteffects_additionalflashes = false,
 			lighteffects_screenspaceshadows = 0,
+			lighteffects_nanoparticlelights = false,
 			distortioneffects = false,
 			snow = false,
 			particles = 10000,
@@ -2318,6 +2319,7 @@ function init()
 			lighteffects = true,
 			lighteffects_additionalflashes = false,
 			lighteffects_screenspaceshadows = 1,
+			lighteffects_nanoparticlelights = false,
 			distortioneffects = true,
 			snow = false,
 			particles = 15000,
@@ -2342,6 +2344,7 @@ function init()
 		 	lighteffects = true,
 		 	lighteffects_additionalflashes = true,
 			lighteffects_screenspaceshadows = 2,
+			lighteffects_nanoparticlelights = true,
 			distortioneffects = true,
 		 	snow = true,
 		 	particles = 20000,
@@ -2365,6 +2368,7 @@ function init()
 			lighteffects = true,
 			lighteffects_additionalflashes = true,
 			lighteffects_screenspaceshadows = 3,
+			lighteffects_nanoparticlelights = true,
 			distortioneffects = true,
 			snow = true,
 			particles = 30000,
@@ -2388,6 +2392,7 @@ function init()
 			lighteffects = true,
 			lighteffects_additionalflashes = true,
 			lighteffects_screenspaceshadows = 4,
+			lighteffects_nanoparticlelights = true,
 			distortioneffects = true,
 			snow = true,
 			particles = 40000,
@@ -2911,6 +2916,12 @@ function init()
 		  end,
 	  	},
 
+		{ id = "lighteffects_nanoparticlelights", group = "gfx", category = types.advanced, name = widgetOptionColor .. "   " .. Spring.I18N('ui.settings.option.nanoparticlelights'), type = "bool", value = Spring.GetConfigInt("NanoParticleLights", 1) == 1, description = Spring.I18N('ui.settings.option.nanoparticlelights_descr'),
+		  onchange = function(i, value)
+			Spring.SetConfigInt("NanoParticleLights", value and 1 or 0)
+		  end,
+		},
+
 		{ id = "distortioneffects", group = "gfx", category = types.basic, widget = "Distortion GL4", name = Spring.I18N('ui.settings.option.distortioneffects'), type = "bool", value = GetWidgetToggleValue("Distortion GL4"), description = Spring.I18N('ui.settings.option.distortioneffects_descr') },
 
 		{ id = "darkenmap", group = "gfx", category = types.advanced, name = Spring.I18N('ui.settings.option.darkenmap'), min = 0, max = 0.33, step = 0.01, type = "slider", value = 0, description = Spring.I18N('ui.settings.option.darkenmap_descr'),
@@ -2956,6 +2967,12 @@ function init()
 		  end,
 		  onchange = function(i, value)
 			  saveOptionValue('Fog Diagonal Lines GL4', 'fogdiaglines', 'setBlurriness', { 'blurriness' }, value)
+		  end,
+		},
+
+		{ id = "territorial_domination_height_opacity", group = "gfx", category = types.advanced, name = Spring.I18N('ui.settings.option.territorial_domination_height_opacity'), type = "slider", min = 0.5, max = 2.0, step = 0.05, value = Spring.GetConfigFloat("territorial_domination_height_opacity", 1.0), description = Spring.I18N('ui.settings.option.territorial_domination_height_opacity_descr'),
+		  onchange = function(i, value)
+			  Spring.SetConfigFloat("territorial_domination_height_opacity", value)
 		  end,
 		},
 
