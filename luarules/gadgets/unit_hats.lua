@@ -19,7 +19,7 @@ end
 
 local DEBUG = false
 
-function gadget:GameID(gameID) 
+function gadget:GameID(gameID)
 	-- make sure gameID is a string because i'm not actually sure
 	cachedGameID = tostring(gameID)
 	-- Initialise this madness
@@ -27,7 +27,7 @@ function gadget:GameID(gameID)
 	-- because yes
 	for i = 1,1000 do
 		-- Check if the next character in the game ID is a number
-		if tonumber(string.sub(cachedGameID, i, i)) then 
+		if tonumber(string.sub(cachedGameID, i, i)) then
 			-- Make sure the number we are creating doesn't grow beyond the 32bit integrer limits
 			if (not tonumber(FakeRandomSeed)) or i <= 8 or (i > 8 and tonumber(FakeRandomSeed .. tonumber(string.sub(cachedGameID, i, i))) < 10) then
 				-- Add the next character that is for sure a number
@@ -304,7 +304,7 @@ CosmeticDefinitions = {
 		faction = {arm = true, cor = false, leg = false},
 		conflictsWith = {},
 	},
-	
+
 	CortexNationWarsGERLeftShoulder = {
 		slot = "leftshoulder",
 		implementation = "unit",
@@ -408,6 +408,8 @@ local spGetTeamUnits = Spring.GetTeamUnits
 local spGetUnitDefID = Spring.GetUnitDefID
 local spGetUnitPosition = Spring.GetUnitPosition
 local spCreateUnit = Spring.CreateUnit
+local SendToUnsynced = SendToUnsynced
+local spGetUnitRulesParam = Spring.GetUnitRulesParam
 local function spGetUnitScriptEnv(unitID)
 	local unitScript = Spring.UnitScript
 	if unitScript and unitScript.GetScriptEnv then
@@ -592,15 +594,20 @@ function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID, attackerDef
 		if DEBUG then
 			Spring.Echo("A hat wearing unit was destroyed, freeing hat", unitID, unitDefID, teamID, attackerID, attackerDefID, attackerTeamID)
 		end
-		Spring.UnitDetachFromAir(hatID)
-		Spring.UnitDetach(hatID)
 		unitsWearingHats[unitID] = nil
-		Hats[hatID] = -1
-		Spring.SetUnitNoSelect(hatID, false)
-		Spring.TransferUnit(hatID, spGetGaiaTeamID()) -- ( number unitID,  numer newTeamID [, boolean given = true ] ) -> nil if given=false, the unit is captured
-		local px, py, pz = Spring.GetUnitPosition(unitID)
-		if px and pz then
-			Spring.SetUnitPosition(hatID, px + 32, pz + 32)
+		if spGetUnitRulesParam(unitID, "remove_decorations") == 1 then
+			Spring.DestroyUnit(hatID)
+		else
+			Spring.UnitDetachFromAir(hatID)
+			Spring.UnitDetach(hatID)
+			Hats[hatID] = -1
+			Spring.SetUnitNoSelect(hatID, false)
+			SendToUnsynced("setUnitNoGroup", hatID, false)
+			Spring.TransferUnit(hatID, spGetGaiaTeamID()) -- ( number unitID,  numer newTeamID [, boolean given = true ] ) -> nil if given=false, the unit is captured
+			local px, py, pz = Spring.GetUnitPosition(unitID)
+			if px and pz then
+				Spring.SetUnitPosition(hatID, px + 32, pz + 32)
+			end
 		end
 		UpdateGameFrameCallIn()
 	end
@@ -653,10 +660,11 @@ function gadget:UnitGiven(unitID, unitDefID, unitTeam)
 
 					--Spring.MoveCtrl.Enable(unitID)
 					if hatPoint then
-						Spring.UnitAttach(nearunitID, hatID, hatPoint)
+						Spring.UnitAttach(nearunitID, hatID, hatPoint, true)
 					end
 					Spring.SetUnitNoDraw(hatID, false)
 					Spring.SetUnitNoSelect(hatID, true)
+					SendToUnsynced("setUnitNoGroup", hatID, true)
 					--Spring.MoveCtrl.Disable(unitID)
 					--Spring.SetUnitLoadingTransport(unitID, nearunitID)
 					unitsWearingHats[nearunitID] = hatID

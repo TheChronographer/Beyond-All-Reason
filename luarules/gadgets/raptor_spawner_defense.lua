@@ -1005,9 +1005,15 @@ if gadgetHandler:IsSyncedCode() then
 			SetGameRulesParam("raptorQueenStaggerActive", queenStagger.currentlyStaggered)
 		end
 
-		SetGameRulesParam("raptorQueenHealth", math.floor(0.5 + ((totalHealth / totalMaxHealth) * 100)))
+		if totalMaxHealth and totalMaxHealth > 0 then
+			SetGameRulesParam("raptorQueenHealth", math.floor(0.5 + ((totalHealth / totalMaxHealth) * 100)))
+			RaptorQueenHealthPercentage = math.floor(0.5 + ((totalHealth / totalMaxHealth) * 100))
+		else
+			SetGameRulesParam("raptorQueenHealth", 0)
+			RaptorQueenHealthPercentage = 0
+		end
+		
 		SetGameRulesParam("pveBossInfo", Json.encode(bosses))
-		RaptorQueenHealthPercentage = math.floor(0.5 + ((totalHealth / totalMaxHealth) * 100))
 	end
 
 	function SpawnQueen()
@@ -1592,7 +1598,7 @@ if gadgetHandler:IsSyncedCode() then
 			return damage
 		end
 		if attackerID and queenIDs[attackerID] then -- Boss Resistance
-			if ScavBossHealthPercentage then
+			if RaptorQueenHealthPercentage then
 				if RaptorQueenHealthPercentage > 50 then
 					damage = damage * 0.25
 				elseif RaptorQueenHealthPercentage > 25 then
@@ -1937,10 +1943,7 @@ if gadgetHandler:IsSyncedCode() then
 		for eggID, _ in pairs(aliveEggsTable) do
 			if mRandom(1,18) == 1 then -- scaled to decay 1000hp egg in about 1 and half minutes +/- RNG
 				--local fx, fy, fz = Spring.GetFeaturePosition(eggID)
-				SetFeatureHealth(eggID, GetFeatureHealth(eggID) - 40)
-				if GetFeatureHealth(eggID) <= 0 then
-					DestroyFeature(eggID)
-				end
+				SetFeatureHealth(eggID, GetFeatureHealth(eggID) - 40, true)
 			end
 		end
 		tracy.ZoneEnd()

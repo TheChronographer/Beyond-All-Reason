@@ -36,7 +36,7 @@ end
 local function tryRawCmd(rawCmd, isRepeat, isRelease)
 	rawCmd = string.trim(rawCmd)
 
-	local cmd, extra = string.match(rawCmd, "^(%w+)[%s]*(.*)$")
+	local cmd, extra = string.match(rawCmd, "^(%S+)%s*(.*)$")
 	local bAction = {
 		command = cmd,
 		extra = extra,
@@ -85,5 +85,5 @@ local function chainHandler(_, extra, bOpts, _, isRepeat, isRelease)
 end
 
 function widget:Initialize()
-	widgetHandler.actionHandler:AddAction(self, "chain", chainHandler, nil, "p")
+	widgetHandler.actionHandler:AddAction(self, "chain", chainHandler, nil, "pt")
 end
