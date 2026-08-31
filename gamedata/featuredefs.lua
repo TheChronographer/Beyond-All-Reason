@@ -12,7 +12,7 @@
 --------------------------------------------------------------------------------
 
 local featureDefs = {}
-local shared = {} -- shared amongst the lua featuredef enviroments
+local shared = {} -- shared amongst the lua featuredef environments
 
 local preProcFile = "gamedata/featuredefs_pre.lua"
 local postProcFile = "gamedata/featuredefs_post.lua"
@@ -46,6 +46,7 @@ for _, filename in ipairs(luaFiles) do
 	local featureDefsEnv = {}
 	featureDefsEnv._G = featureDefsEnv
 	featureDefsEnv.Shared = shared
+	featureDefsEnv.BAR = BAR
 	featureDefsEnv.GetFilename = function()
 		return filename
 	end

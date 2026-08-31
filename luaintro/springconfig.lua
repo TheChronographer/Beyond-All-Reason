@@ -181,6 +181,8 @@ if Spring.GetConfigInt("version", 0) < version then
 end
 
 Spring.SetConfigInt("NanoParticleMode", 1)
+Spring.SetConfigInt("UnitIconsSortedByDepth", 1)
+
 
 -- apply the old pre-engine implementation stored camera minimum zoom level
 local oldMinCamHeight = Spring.GetConfigInt("MinimumCameraHeight", -1)
@@ -216,7 +218,7 @@ else
 end
 
 -- The default mouse drag threshold is set extremely low for engine by default, and fast clicking often results in a drag.
--- This is bad for single unit commands, which turn into empty area commmands as a result of the small drag
+-- This is bad for single unit commands, which turn into empty area commands as a result of the small drag
 local xresolution = math.max(Spring.GetConfigInt("XResolution", 1920), Spring.GetConfigInt("XResolutionWindowed", 1920))
 local yresolution = math.max(Spring.GetConfigInt("YResolution", 1080), Spring.GetConfigInt("YResolutionWindowed", 1080))
 

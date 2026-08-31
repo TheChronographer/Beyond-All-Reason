@@ -12,7 +12,7 @@
 --------------------------------------------------------------------------------
 
 local weaponDefs = {}
-local shared = {} -- shared amongst the lua weapondef enviroments
+local shared = {} -- shared amongst the lua weapondef environments
 
 local preProcFile = "gamedata/weapondefs_pre.lua"
 local postProcFile = "gamedata/weapondefs_post.lua"
@@ -47,6 +47,7 @@ for _, filename in ipairs(luaFiles) do
 	local weaponDefsEnv = {}
 	weaponDefsEnv._G = weaponDefsEnv
 	weaponDefsEnv.Shared = shared
+	weaponDefsEnv.BAR = BAR
 	weaponDefsEnv.GetFilename = function()
 		return filename
 	end

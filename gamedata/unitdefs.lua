@@ -12,7 +12,7 @@
 --------------------------------------------------------------------------------
 
 local unitDefs = {}
-local shared = {} -- shared amongst the lua unitdef enviroments
+local shared = {} -- shared amongst the lua unitdef environments
 
 local preProcFile = "gamedata/unitdefs_pre.lua"
 local postProcFile = "gamedata/unitdefs_post.lua"
@@ -82,6 +82,7 @@ for _, filename in ipairs(luaFiles) do
 		local unitDefsEnv = {}
 		unitDefsEnv._G = unitDefsEnv
 		unitDefsEnv.Shared = shared
+		unitDefsEnv.BAR = BAR
 		unitDefsEnv.GetFilename = function()
 			return filename
 		end
