@@ -171,7 +171,7 @@ if gadgetHandler:IsSyncedCode() then
 		-- Usage: /lavalevel [level] [speed] [remainTime], with no arguments progresses the current lava to the next tide Rhythm
 		-- If speed and remainTime are not specified: defaults to 7.5 elmo/s (0.25 elmo/frame) and 1 second respectively.
 		local accountID = BAR.Utilities.GetAccountID(playerID)
-		local authorized = _G.permissions.lavalevel[accountID]
+		local authorized = _G.permissions.director[accountID]
 		if not (authorized or Spring.IsCheatingEnabled()) then
 			Spring.Log("Lava", LOG.INFO, "Unauthorized command.")
 			return

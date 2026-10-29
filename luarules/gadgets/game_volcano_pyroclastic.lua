@@ -144,7 +144,7 @@ if gadgetHandler:IsSyncedCode() then
 
 		gadgetHandler:AddChatAction("volcano", function(cmd, line, words, playerID)
 			local accountID = BAR.Utilities.GetAccountID(playerID)
-			local authorized = _G.permissions.volcano[accountID]
+			local authorized = _G.permissions.director[accountID]
 
 			if not (authorized or Spring.IsCheatingEnabled()) then
 				Spring.Echo("[Volcano] Unauthorized command.")
